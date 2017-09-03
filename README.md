@@ -1,2 +1,2 @@
-# Subtitle-Stitcher
-Remix subtitles and stitch together new messages
+# Subtitle Stitcher
+Remix subtitles and stitch together new messages.
