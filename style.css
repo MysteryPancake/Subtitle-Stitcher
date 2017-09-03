@@ -1,0 +1,41 @@
+* {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 {
+	text-align: center;
+}
+
+form {
+	background-color: #F5F5F5;
+	padding: 24px;
+}
+
+input[type=text] {
+	box-sizing: border-box;
+	margin: 12px 0;
+	padding: 12px;
+	width: 100%;
+}
+
+.btn-small {
+	background-color: #4CAF50;
+	border: none;
+	color: white;
+	cursor: pointer;
+	margin: 6px;
+	padding: 12px;
+}
+
+.btn-large {
+	background-color: #4CAF50;
+	border: none;
+	color: white;
+	cursor: pointer;
+	padding: 12px;
+	width: 100%;
+}
+
+.btn-small:hover, .btn-large:hover {
+	background-color: #45a049;
+}
