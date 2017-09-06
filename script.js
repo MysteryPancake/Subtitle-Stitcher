@@ -1,7 +1,11 @@
 "use strict"
 
+let player;
 let id = "";
+let index = 0;
+let matches = [];
 let findWords = [];
+let playing = true;
 
 function validateYouTubeURL(url) {
 	if (url === undefined || url === "") {
@@ -14,58 +18,44 @@ function validateYouTubeURL(url) {
 			alert("Invalid URL!");
 		}
 	}
-}
+};
 
 function removeChildren(node) {
 	while (node.hasChildNodes()) {
 		node.removeChild(node.firstChild);
 	}
-}
-
-function stitchSubtitles() {
-	findWords = document.getElementById("message").value.split(" ");
-	id = validateYouTubeURL(document.getElementById("url").value);
-	removeChildren(document.getElementById("form"));
-	const request = new XMLHttpRequest();
-	request.open("GET", "http://www.youtube.com/api/timedtext?lang=en&v=" + id, true);
-	request.onreadystatechange = parseXML;
-	request.send();
-	return false;
-}
-
-function parseXML(e) {
-	if (this.readyState !== 4) return;
-	if (this.status === 200) {
-		makeFound();
-		makeWords(this.responseXML);
-		makePlayer();
-		makeRandom();
-	} else {
-		alert("Couldn't retrieve subtitles!");
-	}
-}
+};
 
 function makeFound() {
 	const found = document.createTextNode("Found: ");
 	document.getElementById("form").appendChild(found);
-}
-
-let matches = [];
-
-function makeRandom() {
-	const random = document.createElement("input");
-	random.setAttribute("class", "btn-large");
-	random.setAttribute("type", "button");
-	random.setAttribute("value", "Play Random Sequence");
-	random.addEventListener("click", playNewRandom);
-	document.getElementById("form").appendChild(random);
-}
+};
 
 function stringContains(haystack, needle) {
 	return haystack.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
-}
+};
 
-function makeWords(xml) {
+function playMatch(start, dur) {
+	player.loadVideoById({
+		"videoId": id,
+		"startSeconds": start,
+		"endSeconds": parseFloat(start) + parseFloat(dur)
+	});
+};
+
+function makeWord(str, start, dur) {
+	const word = document.createElement("input");
+	word.setAttribute("class", "btn-small");
+	word.setAttribute("type", "button");
+	word.setAttribute("value", str);
+	word.addEventListener("click", function() {
+		playMatch(start, dur);
+		playing = false;
+	});
+	document.getElementById("form").appendChild(word);
+};
+
+function parseXML(xml) {
 	for (let i = 0; i < findWords.length; i++) {
 		matches[findWords[i]] = [];
 	}
@@ -82,21 +72,7 @@ function makeWords(xml) {
 			}
 		}
 	}
-}
-
-let playing = true;
-
-function makeWord(str, start, dur) {
-	const word = document.createElement("input");
-	word.setAttribute("class", "btn-small");
-	word.setAttribute("type", "button");
-	word.setAttribute("value", str);
-	word.addEventListener("click", function() {
-		playMatch(start, dur);
-		playing = false;
-	});
-	document.getElementById("form").appendChild(word);
-}
+};
 
 function makePlayer() {
 	const player = document.createElement("div");
@@ -106,17 +82,63 @@ function makePlayer() {
 	tag.src = "https://www.youtube.com/iframe_api";
 	const firstScriptTag = document.getElementsByTagName("script")[0];
 	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-}
+};
 
-let player;
+function arrayRandom(array) {
+	return array[Math.floor(Math.random() * array.length)];
+};
 
-function playMatch(start, dur) {
-	player.loadVideoById({
-		"videoId": id,
-		"startSeconds": start,
-		"endSeconds": parseFloat(start) + parseFloat(dur)
-	});
-}
+function playNextRandom() {
+	let array = matches[findWords[index]];
+	while (index < findWords.length && array.length === 0) {
+		index++;
+		array = matches[findWords[index]];
+	}
+	if (index < findWords.length) {
+		const random = arrayRandom(array);
+		playMatch(random.start, random.dur);
+		index++;
+	} else {
+		playing = false;
+	}
+};
+
+function playNewRandom() {
+	index = 0;
+	playing = true;
+	playNextRandom();
+};
+
+function makeRandom() {
+	const random = document.createElement("input");
+	random.setAttribute("class", "btn-large");
+	random.setAttribute("type", "button");
+	random.setAttribute("value", "Play Random Sequence");
+	random.addEventListener("click", playNewRandom);
+	document.getElementById("form").appendChild(random);
+};
+
+function stitchSubtitles() {
+	findWords = document.getElementById("message").value.split(" ");
+	id = validateYouTubeURL(document.getElementById("url").value);
+	removeChildren(document.getElementById("form"));
+	const request = new XMLHttpRequest();
+	request.open("GET", "https://www.youtube.com/api/timedtext?lang=en&v=" + id, true);
+	request.onreadystatechange = function(e) {
+		if (this.readyState === 4) {
+			if (this.status === 200) {
+				makeFound();
+				parseXML(this.responseXML);
+				makePlayer();
+				makeRandom();
+			} else {
+				alert("Couldn't retrieve subtitles!");
+			}
+		}
+	};
+	request.send();
+	return false;
+};
 
 function onYouTubeIframeAPIReady() {
 	player = new YT.Player("player", {
@@ -135,37 +157,10 @@ function onYouTubeIframeAPIReady() {
 			"onStateChange": onPlayerStateChange
 		},
 	});
-}
+};
 
 function onPlayerStateChange(e) {
 	if (e.data === YT.PlayerState.ENDED && playing) {
 		playNextRandom();
 	}
-}
-
-function arrayRandom(array) {
-	return array[Math.floor(Math.random() * array.length)];
-}
-
-let index = 0;
-
-function playNextRandom() {
-	let array = matches[findWords[index]];
-	while (index < findWords.length && array.length === 0) {
-		array = matches[findWords[index]];
-		index++;
-	}
-	if (index < findWords.length) {
-		const random = arrayRandom(array);
-		playMatch(random.start, random.dur);
-		index++;
-	} else {
-		playing = false;
-	}
-}
-
-function playNewRandom() {
-	index = 0;
-	playing = true;
-	playNextRandom();
-}
+};
