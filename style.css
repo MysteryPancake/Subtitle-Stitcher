@@ -6,6 +6,11 @@ h1 {
 	text-align: center;
 }
 
+.warning {
+	color: red;
+	text-align: center;
+}
+
 form {
 	background-color: #F5F5F5;
 	padding: 24px;
@@ -23,7 +28,7 @@ input[type=text] {
 	border: none;
 	color: white;
 	cursor: pointer;
-	margin: 6px;
+	margin: 3px;
 	padding: 12px;
 }
 
@@ -37,5 +42,5 @@ input[type=text] {
 }
 
 .btn-small:hover, .btn-large:hover {
-	background-color: #45a049;
+	background-color: #45A049;
 }
